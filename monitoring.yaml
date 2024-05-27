@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring
+  namespace: myschedule
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring
+  template:
+    metadata:
+      labels:
+        app: monitoring
+    spec:
+      hostNetwork: true
+      containers:
+      - image: fenglin761/monitoring:v1.0
+        imagePullPolicy: IfNotPresent
+        name: monitoring
+        env: 
+        - name: KUBECONFIG
+          value: "/root/.kube/config"
+        ports:
+        - containerPort: 2112
+          name: monitoring-svc
+        volumeMounts:
+        - mountPath: /root/.kube/config 
+          name: kube-config-path
+      volumes:
+      - name: kube-config-path
+        hostPath:
+          path: /root/.kube/config    # 需修改，k8s 配置文件位置
+          type: File
+      nodeName: k8s-master            # 需修改， 指定节点运行
