@@ -42,6 +42,14 @@ func (n NodeFunc) Storage() float64 {
 	return n.nodestate.StorageUsage
 }
 
+func (n NodeFunc) CPU() int64 {
+	return n.nodestate.CPU
+}
+
+func (n NodeFunc) MEMORY() int64 {
+	return n.nodestate.MEMORY
+}
+
 func (n NodeFunc) Pods(namespace string) (podL []*v1.Pod) {
 	pods, err := Client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
@@ -60,6 +68,8 @@ type NodeState struct {
 	CpuUsage     float64
 	MemoryUsage  float64
 	StorageUsage float64
+	CPU          int64 // 单位：Cores
+	MEMORY       int64 // 单位：B
 	CpuGuage     prometheus.Gauge
 	MemoryGuage  prometheus.Gauge
 	StorageGuage prometheus.Gauge
@@ -116,6 +126,8 @@ func GetState() (getf []*NodeFunc, server func()) {
 		nodeF.nodestate = nodeS
 		nodeS.Node = node
 		nodeF.Node = node
+		nodeF.nodestate.CPU = nodeF.Node.Status.Capacity.Cpu().Value()
+		nodeF.nodestate.MEMORY = nodeF.Node.Status.Capacity.Memory().Value()
 		nodeName := node.Name
 		nodeS.CpuGuage = prometheus.NewGauge(
 			prometheus.GaugeOpts{
