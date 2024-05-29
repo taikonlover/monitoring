@@ -158,7 +158,7 @@ func GetState() (getf []*NodeFunc, server func()) {
 					nodeName := nodes.Node.Name
 					usage, err := metricsClient.NodeMetricses().Get(context.Background(), nodeName, metav1.GetOptions{})
 					if err != nil {
-						panic(err.Error())
+						continue
 					}
 					cpuPercent := usage.Usage.Cpu().AsApproximateFloat64() / nodes.Node.Status.Capacity.Cpu().AsApproximateFloat64() * 100
 					nodes.CpuGuage.Set(cpuPercent)
